@@ -15,5 +15,8 @@ func Connect(config configuration.Database) (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err = db.AutoMigrate(&settings{}); err != nil {
+		return nil, err
+	}
 	return &Database{conn: db}, nil
 }

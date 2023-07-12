@@ -54,8 +54,13 @@ func main() {
 		logger.Fatalf("Connect to database failed: %s", err)
 	}
 
+	backup := backupService.NewService(database)
+	if err = backup.Start(); err != nil {
+		logger.Fatalf("Start service failed: %s", err)
+	}
+
 	// регистрируем хендлеры
-	if err = rms_backup.RegisterRmsBackupHandler(service.Server(), backupService.NewService(database)); err != nil {
+	if err = rms_backup.RegisterRmsBackupHandler(service.Server(), backup); err != nil {
 		logger.Fatalf("Register service failed: %s", err)
 	}
 
