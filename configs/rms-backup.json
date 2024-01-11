@@ -6,5 +6,6 @@
     "password": "rms",
     "database": "rms"
   },
-  "directory": "/backup"
+  "directory": "/backup",
+  "backup-timeout": 10800
 }

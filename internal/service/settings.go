@@ -31,7 +31,7 @@ func (s *Service) setSettings(settings *rms_backup.BackupSettings) {
 	case rms_backup.BackupSettings_EveryMonth:
 		sched = s.sched.Every(1).Month(int(settings.Day))
 	}
-	job, err := sched.At(fmt.Sprintf("%d:00", settings.Hour)).Do(s.startBackup)
+	job, err := sched.At(fmt.Sprintf("%d:00", settings.Hour)).Do(s.startRegularBackup)
 	if err != nil {
 		panic(err)
 	}

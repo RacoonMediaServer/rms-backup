@@ -3,6 +3,7 @@ package backup
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go-micro.dev/v4/logger"
 )
 
@@ -10,6 +11,7 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 	defer func() {
 		if r := recover(); r != nil {
 			e.l.Logf(logger.ErrorLevel, "panic: %s", r)
+			e.state.addError(fmt.Errorf("%+v", r))
 			e.state.setFailed()
 			e.onReady()
 		}
@@ -27,6 +29,7 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 		l := e.l.Fields(map[string]interface{}{"stageNo": i + 1})
 		l.Logf(logger.InfoLevel, "Run stage '%s'", stage.Title)
 		if err := e.runStage(l, ctx, &stage, &passed); err != nil {
+			e.state.addError(err)
 			failed++
 			l.Logf(logger.ErrorLevel, "Stage failed: %s", err)
 			if i == len(instruction.Stages)-1 {
@@ -37,9 +40,9 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 			}
 		} else {
 			success++
-			completeOp++
-			e.state.setProgress(completeOp, totalOp)
 		}
+		completeOp++
+		e.state.setProgress(completeOp, totalOp)
 	}
 
 	for i := len(passed) - 1; i >= 0; i-- {
@@ -49,7 +52,7 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 	}
 
 	if !totalFailed {
-		e.state.setReady(failed != 0)
+		e.state.setReady(0) // TODO: set file size
 	} else {
 		e.state.setFailed()
 	}

@@ -9,8 +9,9 @@ type Command interface {
 
 // Stage is one atomic backup operation
 type Stage struct {
-	Title    string
-	Commands []Command
+	Title     string
+	Commands  []Command
+	Artifacts []string
 }
 
 // Instruction is set of instructions

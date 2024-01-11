@@ -3,6 +3,7 @@ package backup
 import (
 	"errors"
 	"fmt"
+	rms_backup "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-backup"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -89,8 +90,8 @@ func TestEngine_Launch(t *testing.T) {
 	e := NewEngine()
 	set1 := makeInstructionSet(t)
 	set2 := makeInstructionSet(t)
-	assert.True(t, e.Launch(Context{}, set1))
-	assert.False(t, e.Launch(Context{}, set2))
+	assert.True(t, e.Launch(Context{}, rms_backup.BackupType_Full, set1))
+	assert.False(t, e.Launch(Context{}, rms_backup.BackupType_Full, set2))
 	testChan <- struct{}{}
 	wait(e)
 
@@ -112,7 +113,7 @@ func TestEngine_Launch2(t *testing.T) {
 	failedCommand := set.Stages[1].Commands[1].(*testCommand)
 	failedCommand.executeErr = errors.New("error")
 
-	assert.True(t, e.Launch(Context{}, set))
+	assert.True(t, e.Launch(Context{}, rms_backup.BackupType_Full, set))
 	wait(e)
 
 	report := e.GetReport()
@@ -145,7 +146,7 @@ func TestEngine_Launch3(t *testing.T) {
 	failedCommand := set.Stages[0].Commands[2].(*testCommand)
 	failedCommand.executeErr = errors.New("error")
 
-	assert.True(t, e.Launch(Context{}, set))
+	assert.True(t, e.Launch(Context{}, rms_backup.BackupType_Full, set))
 	testChan <- struct{}{}
 	wait(e)
 
@@ -179,7 +180,7 @@ func TestEngine_Launch4(t *testing.T) {
 	failedCommand1.executePanic = true
 	failedCommand2.cleanUpPanic = true
 
-	assert.True(t, e.Launch(Context{}, set))
+	assert.True(t, e.Launch(Context{}, rms_backup.BackupType_Full, set))
 	testChan <- struct{}{}
 	wait(e)
 
@@ -211,7 +212,7 @@ func TestEngine_GetReport(t *testing.T) {
 	assert.Equal(t, NeverRun, report.Status)
 
 	set := makeInstructionSet(t)
-	assert.True(t, e.Launch(Context{}, set))
+	assert.True(t, e.Launch(Context{}, rms_backup.BackupType_Full, set))
 
 	<-time.After(100 * time.Millisecond)
 	report = e.GetReport()
@@ -229,7 +230,7 @@ func TestEngine_Shutdown(t *testing.T) {
 	waitCommand := set.Stages[0].Commands[2].(*testCommand)
 	waitCommand.wait = true
 
-	assert.True(t, e.Launch(Context{}, set))
+	assert.True(t, e.Launch(Context{}, rms_backup.BackupType_Full, set))
 	<-time.After(100 * time.Millisecond)
 	e.Shutdown()
 	wait(e)

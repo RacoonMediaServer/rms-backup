@@ -2,9 +2,11 @@ package backup
 
 import (
 	"context"
+	rms_backup "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-backup"
 	"go-micro.dev/v4/logger"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 // Engine is an entity which can run Instruction
@@ -12,9 +14,10 @@ type Engine struct {
 	l         logger.Logger
 	isRunning atomic.Bool
 
-	ctx    context.Context
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
+	ctx     context.Context
+	cancel  context.CancelFunc
+	wg      sync.WaitGroup
+	timeout time.Duration
 
 	OnReady func(r Report)
 
@@ -27,14 +30,23 @@ func NewEngine() *Engine {
 	}
 }
 
-func (e *Engine) Launch(ctx Context, instruction Instruction) bool {
+func (e *Engine) SetTimeout(timeout time.Duration) {
+	e.timeout = timeout
+}
+
+func (e *Engine) Launch(ctx Context, backupType rms_backup.BackupType, instruction Instruction) bool {
 	if !e.isRunning.CompareAndSwap(false, true) {
 		return false
 	}
 
-	e.state.setInProgress()
+	now := time.Now()
+	e.state.setInProgress(backupType, genFileName(backupType, now), now)
 
-	e.ctx, e.cancel = context.WithCancel(context.Background())
+	if e.timeout == 0 {
+		e.ctx, e.cancel = context.WithCancel(context.Background())
+	} else {
+		e.ctx, e.cancel = context.WithTimeout(context.Background(), e.timeout)
+	}
 	ctx.ctx = e.ctx
 	e.wg.Add(1)
 

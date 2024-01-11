@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/RacoonMediaServer/rms-backup/internal/backup"
-	"github.com/RacoonMediaServer/rms-backup/internal/procedures"
+	"github.com/RacoonMediaServer/rms-backup/internal/config"
 	"github.com/RacoonMediaServer/rms-packages/pkg/misc"
 	rms_backup "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-backup"
 	"github.com/go-co-op/gocron"
+	"go-micro.dev/v4"
 	"go-micro.dev/v4/logger"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"os"
@@ -18,18 +19,18 @@ import (
 type Service struct {
 	db Database
 
-	sched *gocron.Scheduler
+	sched   *gocron.Scheduler
+	engine  *backup.Engine
+	builder backup.InstructionBuilder
+	pub     micro.Event
 
 	mu       sync.RWMutex
 	settings *rms_backup.BackupSettings
 	job      *gocron.Job
-
-	engine *backup.Engine
 }
 
 func (s *Service) LaunchBackup(ctx context.Context, request *rms_backup.LaunchBackupRequest, response *rms_backup.LaunchBackupResponse) error {
-	proc := procedures.CreateBackupProcedure(request.Type)
-	response.AlreadyLaunch = !s.engine.Launch(backup.NewContext(), proc)
+	response.AlreadyLaunch = !s.startBackup(request.Type)
 	return nil
 }
 
@@ -75,12 +76,20 @@ func (s *Service) SetBackupSettings(ctx context.Context, settings *rms_backup.Ba
 	return nil
 }
 
-func NewService(db Database) *Service {
-	return &Service{
-		db:     db,
-		sched:  gocron.NewScheduler(time.Local),
-		engine: backup.NewEngine(),
+func NewService(db Database, builder backup.InstructionBuilder, pub micro.Event) *Service {
+	engine := backup.NewEngine()
+	engine.SetTimeout(config.Config().BackupTimeout())
+
+	service := &Service{
+		db:      db,
+		sched:   gocron.NewScheduler(time.Local),
+		engine:  engine,
+		builder: builder,
+		pub:     pub,
 	}
+
+	engine.OnReady = service.onBackupReady
+	return service
 }
 
 func (s *Service) Start() error {

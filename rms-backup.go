@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/RacoonMediaServer/rms-backup/internal/builder"
 	"github.com/RacoonMediaServer/rms-backup/internal/config"
 	"github.com/RacoonMediaServer/rms-backup/internal/db"
 	backupService "github.com/RacoonMediaServer/rms-backup/internal/service"
+	"github.com/RacoonMediaServer/rms-packages/pkg/pubsub"
 	rms_backup "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-backup"
 	"github.com/urfave/cli/v2"
 	"go-micro.dev/v4"
@@ -54,7 +56,7 @@ func main() {
 		logger.Fatalf("Connect to database failed: %s", err)
 	}
 
-	backup := backupService.NewService(database)
+	backup := backupService.NewService(database, builder.New(), pubsub.NewPublisher(service))
 	if err = backup.Start(); err != nil {
 		logger.Fatalf("Start service failed: %s", err)
 	}
