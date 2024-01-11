@@ -3,7 +3,7 @@
     "host": "localhost",
     "port": 5432,
     "user": "rms",
-    "password": "qwerty",
+    "password": "rms",
     "database": "rms"
   },
   "directory": "/backup"
