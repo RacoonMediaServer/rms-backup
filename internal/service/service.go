@@ -35,8 +35,23 @@ func (s *Service) LaunchBackup(ctx context.Context, request *rms_backup.LaunchBa
 }
 
 func (s *Service) GetBackupStatus(ctx context.Context, empty *emptypb.Empty, response *rms_backup.GetBackupStatusResponse) error {
-	//TODO implement me
-	panic("implement me")
+	r := s.engine.GetReport()
+	response.Progress = r.Progress
+	response.LastTime = uint64(r.Timestamp.Unix())
+	switch r.Status {
+	case backup.NeverRun:
+		response.Status = rms_backup.GetBackupStatusResponse_NotStarted
+	case backup.ReadyWithErrors:
+		fallthrough
+	case backup.Ready:
+		fallthrough
+	case backup.Failed:
+		response.Status = rms_backup.GetBackupStatusResponse_Ready
+	case backup.InProgress:
+		response.Status = rms_backup.GetBackupStatusResponse_InProgress
+	}
+
+	return nil
 }
 
 func (s *Service) GetBackups(ctx context.Context, empty *emptypb.Empty, response *rms_backup.GetBackupsResponse) error {

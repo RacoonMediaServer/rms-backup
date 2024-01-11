@@ -20,7 +20,6 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 	var passed []Command
 	success := 0
 	failed := 0
-	totalFailed := false
 	totalOp := instruction.Operations()
 	completeOp := 0
 
@@ -32,9 +31,6 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 			e.state.addError(err)
 			failed++
 			l.Logf(logger.ErrorLevel, "Stage failed: %s", err)
-			if i == len(instruction.Stages)-1 {
-				totalFailed = true
-			}
 			if errors.Is(err, context.Canceled) {
 				break
 			}
@@ -51,7 +47,7 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 		}
 	}
 
-	if !totalFailed {
+	if success != 0 {
 		e.state.setReady(0) // TODO: set file size
 	} else {
 		e.state.setFailed()
