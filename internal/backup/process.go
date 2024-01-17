@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/RacoonMediaServer/rms-backup/internal/config"
 	"go-micro.dev/v4/logger"
+	"path/filepath"
 )
 
 func (e *Engine) process(ctx Context, instruction Instruction) {
@@ -18,6 +20,7 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 	}()
 
 	var passed []Command
+	var artifacts []string
 	success := 0
 	failed := 0
 	totalOp := instruction.Operations()
@@ -36,9 +39,22 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 			}
 		} else {
 			success++
+			artifacts = append(artifacts, stage.Artifacts...)
 		}
 		completeOp++
 		e.state.setProgress(completeOp, totalOp)
+	}
+
+	var size uint64
+	if len(artifacts) != 0 {
+		var err error
+		size, err = e.compressArtifacts(ctx, artifacts)
+		if err != nil {
+			err = fmt.Errorf("compress artifacts failed: %w", err)
+			e.l.Log(logger.ErrorLevel, err)
+			e.state.addError(err)
+			success = 0
+		}
 	}
 
 	for i := len(passed) - 1; i >= 0; i-- {
@@ -48,7 +64,7 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 	}
 
 	if success != 0 {
-		e.state.setReady(0) // TODO: set file size
+		e.state.setReady(size)
 	} else {
 		e.state.setFailed()
 	}
@@ -98,4 +114,10 @@ iterateStages:
 	}
 
 	return reason
+}
+
+func (e *Engine) compressArtifacts(ctx Context, artifacts []string) (size uint64, err error) {
+	archive := filepath.Join(config.Config().Directory, e.state.getReport().FileName)
+	size, err = e.compressor.Compress(ctx, archive, artifacts)
+	return
 }

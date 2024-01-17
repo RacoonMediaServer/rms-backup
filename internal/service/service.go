@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/RacoonMediaServer/rms-backup/internal/backup"
+	"github.com/RacoonMediaServer/rms-backup/internal/compressor"
 	"github.com/RacoonMediaServer/rms-backup/internal/config"
 	"github.com/RacoonMediaServer/rms-packages/pkg/misc"
 	rms_backup "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-backup"
@@ -92,18 +93,25 @@ func (s *Service) SetBackupSettings(ctx context.Context, settings *rms_backup.Ba
 }
 
 func NewService(db Database, builder backup.InstructionBuilder, pub micro.Event) *Service {
-	engine := backup.NewEngine()
-	engine.SetTimeout(config.Config().BackupTimeout())
-
 	service := &Service{
 		db:      db,
 		sched:   gocron.NewScheduler(time.Local),
-		engine:  engine,
 		builder: builder,
 		pub:     pub,
 	}
 
+	compressionSettingsProvider := func() compressor.Settings {
+		service.mu.RLock()
+		defer service.mu.RUnlock()
+		return compressor.Settings{Password: service.settings.Password}
+	}
+	compr := compressor.New(compressor.Format_7z, compressionSettingsProvider)
+
+	engine := backup.NewEngine(compr)
+	engine.SetTimeout(config.Config().BackupTimeout())
 	engine.OnReady = service.onBackupReady
+
+	service.engine = engine
 	return service
 }
 

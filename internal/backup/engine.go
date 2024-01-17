@@ -2,6 +2,7 @@ package backup
 
 import (
 	"context"
+	"github.com/RacoonMediaServer/rms-backup/internal/compressor"
 	rms_backup "github.com/RacoonMediaServer/rms-packages/pkg/service/rms-backup"
 	"go-micro.dev/v4/logger"
 	"sync"
@@ -11,8 +12,9 @@ import (
 
 // Engine is an entity which can run Instruction
 type Engine struct {
-	l         logger.Logger
-	isRunning atomic.Bool
+	l          logger.Logger
+	isRunning  atomic.Bool
+	compressor compressor.Compressor
 
 	ctx     context.Context
 	cancel  context.CancelFunc
@@ -24,9 +26,10 @@ type Engine struct {
 	state state
 }
 
-func NewEngine() *Engine {
+func NewEngine(compr compressor.Compressor) *Engine {
 	return &Engine{
-		l: logger.DefaultLogger.Fields(map[string]interface{}{"from": "backup"}),
+		l:          logger.DefaultLogger.Fields(map[string]interface{}{"from": "backup"}),
+		compressor: compr,
 	}
 }
 
@@ -40,7 +43,7 @@ func (e *Engine) Launch(ctx Context, backupType rms_backup.BackupType, instructi
 	}
 
 	now := time.Now()
-	e.state.setInProgress(backupType, genFileName(backupType, now), now)
+	e.state.setInProgress(backupType, e.genFileName(backupType, now), now)
 
 	if e.timeout == 0 {
 		e.ctx, e.cancel = context.WithCancel(context.Background())
