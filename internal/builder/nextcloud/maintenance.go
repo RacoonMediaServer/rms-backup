@@ -7,7 +7,8 @@ import (
 )
 
 type setMaintenanceMode struct {
-	id string
+	name string
+	id   string
 }
 
 func (c *setMaintenanceMode) Title() string {
@@ -15,7 +16,7 @@ func (c *setMaintenanceMode) Title() string {
 }
 
 func (c *setMaintenanceMode) Execute(ctx backup.Context) error {
-	id, err := system.DockerGetContainerID(ctx, "nextcloud")
+	id, err := system.DockerGetContainerID(ctx, c.name)
 	if err != nil {
 		return fmt.Errorf("get container ID failed: %w", err)
 	}

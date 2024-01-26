@@ -10,6 +10,7 @@ type Configuration struct {
 	Directory        string
 	BackupTimeoutSec int64 `json:"backup-timeout"`
 	Database         configuration.Database
+	Services         Services
 }
 
 var config Configuration

@@ -23,7 +23,7 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 	var artifacts []string
 	success := 0
 	failed := 0
-	totalOp := instruction.Operations()
+	totalOp := instruction.Operations() + 1
 	completeOp := 0
 
 	e.l.Logf(logger.InfoLevel, "Start instruction set '%s'", instruction.Title)
@@ -55,6 +55,8 @@ func (e *Engine) process(ctx Context, instruction Instruction) {
 			e.state.addError(err)
 			success = 0
 		}
+		completeOp++
+		e.state.setProgress(completeOp, totalOp)
 	}
 
 	for i := len(passed) - 1; i >= 0; i-- {
