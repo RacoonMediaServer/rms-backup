@@ -11,6 +11,7 @@ type Configuration struct {
 	Database         configuration.Database
 	Services         Services
 	Directories      Directories
+	Debug            configuration.Debug
 }
 
 var config Configuration
