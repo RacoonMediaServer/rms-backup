@@ -15,6 +15,7 @@ import "github.com/urfave/cli/v2"
 func main() {
 	var command string
 	var backupFile string
+	var fullBackup bool
 	service := micro.NewService(
 		micro.Name("rms-backup.client"),
 		micro.Flags(
@@ -30,6 +31,12 @@ func main() {
 				Required:    false,
 				Destination: &backupFile,
 			},
+			&cli.BoolFlag{
+				Name:        "full",
+				Usage:       "create full backup",
+				Required:    false,
+				Destination: &fullBackup,
+			},
 		),
 	)
 	service.Init()
@@ -38,7 +45,7 @@ func main() {
 
 	switch command {
 	case "backup":
-		if err := backup(client); err != nil {
+		if err := backup(client, fullBackup); err != nil {
 			panic(err)
 		}
 	case "list":
@@ -62,9 +69,12 @@ func main() {
 	}
 }
 
-func backup(cli rms_backup.RmsBackupService) error {
+func backup(cli rms_backup.RmsBackupService, full bool) error {
 
-	req := rms_backup.LaunchBackupRequest{Type: rms_backup.BackupType_Full}
+	req := rms_backup.LaunchBackupRequest{Type: rms_backup.BackupType_Partial}
+	if full {
+		req.Type = rms_backup.BackupType_Full
+	}
 
 	resp, err := cli.LaunchBackup(context.Background(), &req, client.WithRequestTimeout(40*time.Second))
 	if err != nil {
