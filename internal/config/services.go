@@ -11,7 +11,12 @@ type Postgres struct {
 	Container string
 }
 
+type Gitea struct {
+	Container string
+}
+
 type Services struct {
 	Postgres  Postgres
 	Nextcloud Nextcloud
+	Gitea     Gitea
 }

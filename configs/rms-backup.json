@@ -15,6 +15,9 @@
     },
     "postgres": {
       "container": "postgres"
+    },
+    "gitea": {
+      "container": "gitea"
     }
   },
   "directories": {
