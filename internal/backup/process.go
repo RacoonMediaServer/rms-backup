@@ -129,6 +129,7 @@ func (e *Engine) compressArtifacts(ctx Context, artifacts []string) (size uint64
 			absArtifacts[i] = artifacts[i]
 		}
 	}
+	ctx.Log().Logf(logger.DebugLevel, "Artifacts: %+v", absArtifacts)
 	size, err = e.compressor.Compress(ctx, archive, artifacts)
 	return
 }
