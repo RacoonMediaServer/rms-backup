@@ -119,6 +119,7 @@ iterateStages:
 }
 
 func (e *Engine) compressArtifacts(ctx Context, artifacts []string) (size uint64, err error) {
+	ctx.Log().Logf(logger.InfoLevel, "Compress artifacts [ %d ]...", len(artifacts))
 	archive := filepath.Join(config.Config().Directories.Backups, e.state.getReport().FileName)
 	absArtifacts := make([]string, len(artifacts))
 	for i := range artifacts {
