@@ -5,7 +5,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.Version=`git tag --sort=
 RUN CGO_ENABLED=0 GOOS=linux go build -o backupctl -a -installsuffix cgo ./app/backupctl/backupctl.go
 
 FROM alpine:latest
-RUN apk --no-cache add ca-certificates tzdata && apk add --update docker openrc
+RUN apk --no-cache add ca-certificates tzdata 7zip && apk add --update docker openrc
 RUN mkdir /app
 WORKDIR /app
 COPY --from=builder /src/service/rms-backup .
