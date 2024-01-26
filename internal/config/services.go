@@ -7,11 +7,11 @@ type Nextcloud struct {
 	Data      string
 }
 
-type Database struct {
+type Postgres struct {
 	Container string
 }
 
 type Services struct {
-	Database  Database
+	Postgres  Postgres
 	Nextcloud Nextcloud
 }
