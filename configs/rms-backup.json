@@ -9,16 +9,17 @@
   "services": {
     "nextcloud": {
       "container": "nextcloud",
-      "internal-directory": "/backup",
       "database": "nextcloud",
       "user": "user_nextcloud",
       "data": "/mnt/data/nextcloud"
     },
-    "database": {
-      "container": "postgres",
-      "internal-directory": "/backup"
+    "postgres": {
+      "container": "postgres"
     }
   },
-  "directory": "/backup",
+  "directories": {
+    "backups": "/backups",
+    "artifacts": "/artifacts"
+  },
   "backup-timeout": 10800
 }

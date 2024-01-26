@@ -119,7 +119,15 @@ iterateStages:
 }
 
 func (e *Engine) compressArtifacts(ctx Context, artifacts []string) (size uint64, err error) {
-	archive := filepath.Join(config.Config().Directory, e.state.getReport().FileName)
+	archive := filepath.Join(config.Config().Directories.Backups, e.state.getReport().FileName)
+	absArtifacts := make([]string, len(artifacts))
+	for i := range artifacts {
+		if !filepath.IsAbs(artifacts[i]) {
+			absArtifacts[i] = filepath.Join(config.Config().Directories.Artifacts, artifacts[i])
+		} else {
+			absArtifacts[i] = artifacts[i]
+		}
+	}
 	size, err = e.compressor.Compress(ctx, archive, artifacts)
 	return
 }

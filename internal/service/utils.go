@@ -6,5 +6,5 @@ import (
 )
 
 func getAbsoluteFileName(fileName string) string {
-	return filepath.Join(config.Config().Directory, fileName)
+	return filepath.Join(config.Config().Directories.Backups, fileName)
 }

@@ -7,10 +7,10 @@ import (
 
 // Configuration represents entire service configuration
 type Configuration struct {
-	Directory        string
 	BackupTimeoutSec int64 `json:"backup-timeout"`
 	Database         configuration.Database
 	Services         Services
+	Directories      Directories
 }
 
 var config Configuration

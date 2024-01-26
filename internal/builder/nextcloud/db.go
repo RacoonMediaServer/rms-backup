@@ -21,7 +21,7 @@ func (d dbBackupCommand) Title() string {
 }
 
 func (d dbBackupCommand) outputFile() string {
-	return filepath.Join(d.nextcloud.InternalDirectory, databaseBackupArtifact)
+	return filepath.Join(config.Config().Directories.Artifacts, databaseBackupArtifact)
 }
 
 func (d dbBackupCommand) Execute(ctx backup.Context) error {

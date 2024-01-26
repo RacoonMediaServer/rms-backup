@@ -1,11 +1,10 @@
 package config
 
 type Nextcloud struct {
-	Container         string
-	InternalDirectory string `json:"internal-directory"`
-	User              string
-	Database          string
-	Data              string
+	Container string
+	User      string
+	Database  string
+	Data      string
 }
 
 type Database struct {
