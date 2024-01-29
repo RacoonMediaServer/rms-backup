@@ -54,6 +54,7 @@ func (s *Service) notifyBackupDone(report backup.Report) {
 		SizeMB:    &sizeMB,
 	}
 	s.publishEvent(&event)
+	logger.Infof("Backup data saved to '%s'", report.FileName)
 }
 
 func (s *Service) notifyBackupFailed(report backup.Report) {
