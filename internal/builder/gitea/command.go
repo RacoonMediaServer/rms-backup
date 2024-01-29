@@ -20,7 +20,7 @@ func (b backupCommand) Title() string {
 }
 
 func (b backupCommand) Execute(ctx backup.Context) error {
-	const tmpPath = "/home/git/gitea-dump.zip"
+	const tmpPath = "/data/git/gitea-dump.zip"
 	id, err := system.DockerGetContainerID(ctx, b.container)
 	if err != nil {
 		return fmt.Errorf("get container ID failed: %w", err)
