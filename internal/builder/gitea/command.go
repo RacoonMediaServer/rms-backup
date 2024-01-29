@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-const backupArtifact = "gitea.bak.zip"
+const backupArtifact = "gitea.zip.bak"
 
 type backupCommand struct {
 	container string
@@ -20,14 +20,15 @@ func (b backupCommand) Title() string {
 }
 
 func (b backupCommand) Execute(ctx backup.Context) error {
+	const tmpPath = "/home/git/gitea-dump.zip"
 	id, err := system.DockerGetContainerID(ctx, b.container)
 	if err != nil {
 		return fmt.Errorf("get container ID failed: %w", err)
 	}
-	if err = system.DockerExec(ctx, "git", id, "gitea", "dump", "-c", "/data/gitea/conf/app.ini", "-f", "~/gitea-dump.zip"); err != nil {
+	if err = system.DockerExec(ctx, "git", id, "gitea", "dump", "-c", "/data/gitea/conf/app.ini", "-f", tmpPath); err != nil {
 		return err
 	}
-	return system.DockerExec(ctx, "root", id, "mv", "/home/git/gitea-dump.zip", b.outputFile())
+	return system.DockerExec(ctx, "root", id, "mv", tmpPath, b.outputFile())
 }
 
 func (b backupCommand) outputFile() string {
